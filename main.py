@@ -1,9 +1,30 @@
+from typing import Union
+
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from models.db_service import DBService
 
 app = FastAPI()
 db_service = DBService()
+
+
+class Product(BaseModel):
+    name: str
+    categories_ids: Union[list, None] = None
+
+
+class Category(BaseModel):
+    name: str
+    products_ids: Union[list, None] = None
+
+
+class CategoryAdding(BaseModel):
+    ids: list
+
+
+class ProductAdding(BaseModel):
+    ids: list
 
 
 @app.get('/product/{product_id}')
@@ -53,7 +74,6 @@ def get_categories():
 @app.get('/couples')
 def get_all_couples():
     couples = db_service.get_all_couples()
-    print(couples)
     couples = [
         {
             'product': couple[0],
@@ -63,8 +83,8 @@ def get_all_couples():
 
 
 @app.post('/product')
-def add_product(product_name: str, categories_ids: list = None):
-    product = db_service.add_product(product_name, categories_ids)
+def add_product(product: Product):
+    product = db_service.add_product(product.name, product.categories_ids)
     return {
                 'id': product.id,
                 'name': product.name,
@@ -73,8 +93,8 @@ def add_product(product_name: str, categories_ids: list = None):
 
 
 @app.post('/category')
-def add_category(category_name: str, products_ids: list = None):
-    category = db_service.add_category(category_name, products_ids)
+def add_category(category: Category):
+    category = db_service.add_category(category.name, category.products_ids)
     return {
                 'id': category.id,
                 'name': category.name,
@@ -83,8 +103,8 @@ def add_category(category_name: str, products_ids: list = None):
 
 
 @app.put('/product/{product_id}')
-def add_categories_to_product(product_id: int, categories_ids: list):
-    product = db_service.add_categories_to_product(product_id, categories_ids)
+def add_categories_to_product(product_id: int, categories: CategoryAdding):
+    product = db_service.add_categories_to_product(product_id, categories.ids)
     return {
                 'id': product.id,
                 'name': product.name,

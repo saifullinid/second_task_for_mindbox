@@ -8,4 +8,4 @@ endpoints:\
   '/category/{category_id}' - get one category by id\
   '/products' - get all products\
   '/categories' - get all categories\
-  '/couples' - get all couples <product, category>\
+  '/couples' - get all couples <product, category>

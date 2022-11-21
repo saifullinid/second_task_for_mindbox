@@ -3,10 +3,12 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from models.database import SessionLocal
 from models.db_service import DBService
 
 app = FastAPI()
 db_service = DBService()
+db_session = SessionLocal()
 
 
 class Product(BaseModel):
@@ -29,7 +31,10 @@ class ProductAdding(BaseModel):
 
 @app.get('/product/{product_id}')
 def get_product(product_id: int):
-    product = db_service.get_product(product_id)
+    product = db_service.get_product(product_id, db_session)
+    if not product:
+        return {'data': 'not found product'}
+
     return {
                 'id': product.id,
                 'name': product.name,
@@ -39,7 +44,10 @@ def get_product(product_id: int):
 
 @app.get('/category/{category_id}')
 def get_category(category_id: int):
-    category = db_service.get_category(category_id)
+    category = db_service.get_category(category_id, db_session)
+    if not category:
+        return {'data': 'not found category'}
+
     return {
                 'id': category.id,
                 'name': category.name,
@@ -49,88 +57,46 @@ def get_category(category_id: int):
 
 @app.get('/products')
 def get_products():
-    products = db_service.get_all_products()
+    products = db_service.get_all_products(db_session)
+    if not products:
+        return {'data': 'not found products'}
+
     products = [
         {
             'id': product.id,
             'name': product.name,
             'categories': product.categories,
-        } for product in products]
+        } for product in products
+    ]
     return products
 
 
 @app.get('/categories')
 def get_categories():
-    categories = db_service.get_all_categories()
+    categories = db_service.get_all_categories(db_session)
+    if not categories:
+        return {'data': 'not found categories'}
+
     categories = [
         {
             'id': category.id,
             'name': category.name,
             'products': category.products,
-        } for category in categories]
+        } for category in categories
+    ]
     return categories
 
 
 @app.get('/couples')
 def get_all_couples():
-    couples = db_service.get_all_couples()
+    couples = db_service.get_all_couples(db_session)
+    if not couples:
+        return {'data': 'not found couples'}
+
     couples = [
         {
             'product': couple[0],
             'category': couple[1],
-        } for couple in couples]
+        } for couple in couples
+    ]
     return couples
-
-
-@app.post('/product')
-def add_product(product: Product):
-    product = db_service.add_product(product.name, product.categories_ids)
-    return {
-                'id': product.id,
-                'name': product.name,
-                'categories': product.categories,
-            }
-
-
-@app.post('/category')
-def add_category(category: Category):
-    category = db_service.add_category(category.name, category.products_ids)
-    return {
-                'id': category.id,
-                'name': category.name,
-                'products': category.products,
-            }
-
-
-@app.put('/product/{product_id}')
-def add_categories_to_product(product_id: int, categories: CategoryAdding):
-    product = db_service.add_categories_to_product(product_id, categories.ids)
-    return {
-                'id': product.id,
-                'name': product.name,
-                'categories': product.categories,
-            }
-
-
-@app.put('/category/{category_id}')
-def add_products_to_category(category_id: int, products_ids: list):
-    category = db_service.add_products_to_category(category_id, products_ids)
-    return {
-                'id': category.id,
-                'name': category.name,
-                'products': category.products,
-            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

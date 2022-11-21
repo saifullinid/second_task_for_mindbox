@@ -28,7 +28,7 @@ class Product(Base):
     categories = relationship('Category', secondary=association_table, back_populates='products')
 
     def __repr__(self):
-        return f'{self.name}'
+        return f'{self.id}'
 
 
 class Category(Base):
